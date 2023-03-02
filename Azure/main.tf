@@ -89,26 +89,12 @@ resource "azurerm_linux_virtual_machine" "bootstrap_vm" {
   # Seperate shell so user inherits the groupadd in the following shell to run docker as non-root
   provisioner "remote-exec" {
     inline = [
-      "ls",
+      "curl -fsSL https://get.docker.com -o get-docker.sh",
+      "sudo sh get-docker.sh",
+      "sudo groupadd docker",
+      "sudo usermod -aG docker $USER",
+      "echo 'END DOCKER INSTALL'",
     ]
 
   }
-
-  # Commands:
-
-  # "wget https://github.com/pivotal-cf/pivnet-cli/releases/download/v${var.pivnet_version}/pivnet-linux-amd64-${var.pivnet_version}",
-  #     "chmod 755 pivnet-linux-amd64-${var.pivnet_version}",
-  #     "sudo mv pivnet-linux-amd64-${var.pivnet_version} /usr/local/bin/pivnet",
-  #     "pivnet login --api-token=${var.pivnet_api_token}",
-  #     "pivnet download-product-files --product-slug='tanzu-application-platform' --release-version='${var.tap_version}' --glob='tanzu-framework-linux-amd64-*.tar'",
-  #     "tar xvf tanzu-framework-*-amd64-*.tar",
-  #     "sudo install cli/core/v${var.tanzu_cli_version}/tanzu-core-*_amd64 /usr/local/bin/tanzu",
-  #     "export TANZU_CLI_NO_INIT=true",
-  #     "tanzu version",
-  #     "tanzu plugin install --local cli all",
-  #     "rm -f tanzu-framework-*-amd64-*.tar",
-  #     "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
-  #     "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
-      
-    
 }

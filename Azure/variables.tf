@@ -10,22 +10,6 @@ variable "subscription_name" {
   # sensitive = true
 }
 
-### Service Principal
-
-variable "sp_tenant_id" {
-  type = string
-}
-
-variable "sp_client_id" {
-  type = string
-  # sensitive = true
-}
-
-variable "sp_secret" {
-  type = string
-  # sensitive = true
-}
-
 ### Other variables
 variable "resource_group" {
   description = "Resource group name"
