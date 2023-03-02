@@ -86,15 +86,58 @@ resource "azurerm_linux_virtual_machine" "bootstrap_vm" {
     password = self.admin_password
   }
 
+  # Send files:
+  provisioner "file" {  
+    source = "${path.cwd}/../binaries/" 
+    destination = "/home/${var.bootstrap_username}/" 
+  }
+
+
   # Seperate shell so user inherits the groupadd in the following shell to run docker as non-root
   provisioner "remote-exec" {
     inline = [
+      "curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash",   
+      "az login --service-principal -u ${var.sp_client_id} -p ${var.sp_secret} --tenant ${var.sp_tenant_id}",
       "curl -fsSL https://get.docker.com -o get-docker.sh",
       "sudo sh get-docker.sh",
       "sudo groupadd docker",
       "sudo usermod -aG docker $USER",
       "echo 'END DOCKER INSTALL'",
+      "sudo sysctl net/netfilter/nf_conntrack_max=131072",
     ]
+  }
 
+  provisioner "remote-exec" {
+    inline = [
+      "cd",
+      "mkdir tanzu",
+      "cd tanzu",
+      "mv tanzu-cli-bundle-linux-amd64.tar.gz tanzu",
+      "tar -xvf tanzu-cli-bundle-linux-amd64.tar.gz",
+      "sudo install core/v0.28.0/tanzu-core-linux_amd64 /usr/local/bin/tanzu",
+      "tanzu init",
+      "tanzu version",
+      "tanzu plugin sync",
+      "tanzu plugin list",
+      "curl -LO https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl",
+      "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
+      "cd $HOME/tanzu/cli",
+      "gunzip ytt-linux-amd64-v0.43.1+vmware.1.gz",
+      "chmod ugo+x ytt-linux-amd64-v0.43.1+vmware.1",
+      "sudo mv ./ytt-linux-amd64-v0.43.1+vmware.1 /usr/local/bin/ytt",
+      "ytt --version",
+      "gunzip kapp-linux-amd64-v0.53.2+vmware.1.gz",
+      "chmod ugo+x kapp-linux-amd64-v0.53.2+vmware.1",
+      "sudo mv ./kapp-linux-amd64-v0.53.2+vmware.1 /usr/local/bin/kapp",
+      "kapp --version",
+      "gunzip kbld-linux-amd64-v0.35.1+vmware.1.gz",
+      "chmod ugo+x kbld-linux-amd64-v0.35.1+vmware.1",
+      "sudo mv ./kbld-linux-amd64-v0.35.1+vmware.1 /usr/local/bin/kbld",
+      "kbld --version",
+      "gunzip imgpkg-linux-amd64-v0.31.1+vmware.1.gz",
+      "chmod ugo+x imgpkg-linux-amd64-v0.31.1+vmware.1",
+      "sudo mv ./imgpkg-linux-amd64-v0.31.1+vmware.1 /usr/local/bin/imgpkg",
+      "imgpkg --version",
+    ]
   }
 }

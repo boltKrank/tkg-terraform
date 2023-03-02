@@ -20,6 +20,20 @@ variable "location" {
   description = "The Azure Region in which all resources should be created."
 }
 
+### SP
+
+variable "sp_client_id" {
+  
+}
+
+variable "sp_tenant_id" {
+  
+}
+
+variable "sp_secret" {
+  
+}
+
 ### Bootstrap box
 
 variable "bootstrap_username" {
